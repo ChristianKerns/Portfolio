@@ -1,0 +1,157 @@
+import requests
+import json
+import time
+import os
+
+# Constants 
+tickers = ["AAPL", "TSLA", "GOOG", "JPM", "CVX", "DIS", "CMCSA", "CSCO", "BA", "ADBE"]
+key1 = "Time Series (Daily)"
+key2 = "4. close"
+results = {}
+
+# Fetch and update data
+for ticker in tickers:
+    print(f"\nFetching data for {ticker}...")
+    url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={ticker}&outputsize=full&apikey={"NG9C9EPVYBMQT0C8"}"
+    response = requests.get(url)
+    data = response.json()
+
+    if key1 not in data:
+        print(f"There is an error fetching data for {ticker}")
+        continue
+
+    filename = f"{ticker}.csv"
+    last_date = ""
+
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
+            lines = f.readlines()
+            if len(lines) > 1:
+                last_date = lines[-1].split(",")[0].strip()
+
+    new_lines = []
+    for date in sorted(data[key1].keys()):
+        if date > last_date:
+            price = data[key1][date][key2]
+            new_lines.append(f"{date},{price}\n")
+
+    write_mode = "a" if os.path.exists(filename) else "w"
+    with open(filename, write_mode) as f:
+        if write_mode == "w":
+            f.write("Date,Price\n")
+        f.writelines(new_lines)
+
+# Functions
+def meanReversion(prices):
+    total_profit = 0.0
+    buy_price = None
+    first_buy = None
+    signal = ""
+    for i in range(5, len(prices)):
+        avg = sum(prices[i-5:i]) / 5
+        price = prices[i]
+        if price < avg * 0.98 and buy_price is None:
+            buy_price = price
+            if first_buy is None:
+                first_buy = price
+        elif price > avg * 1.02 and buy_price is not None:
+            total_profit += price - buy_price
+            buy_price = None
+
+    if buy_price is not None and prices[-1] > sum(prices[-6:-1]) / 5 * 1.02:
+        signal = "You should sell this stock today (Mean Reversion)"
+    elif buy_price is None and prices[-1] < sum(prices[-6:-1]) / 5 * 0.98:
+        signal = "You should buy this stock today (Mean Reversion)"
+
+    return total_profit, (total_profit / first_buy) * 100 if first_buy else 0, signal
+
+def simpleMovingAverage(prices):
+    total_profit = 0.0
+    buy_price = None
+    first_buy = None
+    signal = ""
+    for i in range(5, len(prices)):
+        avg = sum(prices[i-5:i]) / 5
+        price = prices[i]
+        if price > avg and buy_price is None:
+            buy_price = price
+            if first_buy is None:
+                first_buy = price
+        elif price < avg and buy_price is not None:
+            total_profit += price - buy_price
+            buy_price = None
+
+    if buy_price is not None and prices[-1] < sum(prices[-6:-1]) / 5:
+        signal = "You should sell this stock today (SMA)"
+    elif buy_price is None and prices[-1] > sum(prices[-6:-1]) / 5:
+        signal = "You should buy this stock today (SMA)"
+
+    return total_profit, (total_profit / first_buy) * 100 if first_buy else 0, signal
+
+def bollingerBands(prices):
+    total_profit = 0.0
+    buy_price = None
+    first_buy = None
+    signal = ""
+    for i in range(5, len(prices)):
+        avg = sum(prices[i-5:i]) / 5
+        price = prices[i]
+        if price > avg * 1.05 and buy_price is None:
+            buy_price = price
+            if first_buy is None:
+                first_buy = price
+        elif price < avg * 0.95 and buy_price is not None:
+            total_profit += price - buy_price
+            buy_price = None
+
+    if buy_price is not None and prices[-1] < sum(prices[-6:-1]) / 5 * 0.95:
+        signal = "You should sell this stock today (Bollinger Bands)"
+    elif buy_price is None and prices[-1] > sum(prices[-6:-1]) / 5 * 1.05:
+        signal = "You should buy this stock today (Bollinger Bands)"
+
+    return total_profit, (total_profit / first_buy) * 100 if first_buy else 0, signal
+
+# Run strategies on each ticker
+best_stock = ""
+best_strategy = ""
+max_profit = float("-inf")
+
+for ticker in tickers:
+    print(f"\nRunning strategies for {ticker}...")
+
+    file_path = f"{ticker}.csv"
+    with open(file_path, "r") as f:
+        lines = f.readlines()[1:]
+        prices = [float(line.strip().split(",")[1]) for line in lines]
+
+    results[ticker] = {}
+
+    mr_profit, mr_return, mr_signal = meanReversion(prices)
+    sma_profit, sma_return, sma_signal = simpleMovingAverage(prices)
+    bb_profit, bb_return, bb_signal = bollingerBands(prices)
+
+    results[ticker]["Mean Reversion"] = {"Profit": mr_profit, "Return": mr_return}
+    results[ticker]["SMA"] = {"Profit": sma_profit, "Return": sma_return}
+    results[ticker]["Bollinger Bands"] = {"Profit": bb_profit, "Return": bb_return}
+
+    for signal in [mr_signal, sma_signal, bb_signal]:
+        if signal:
+            print(signal)
+
+    for strat_name, strat_data in results[ticker].items():
+        if strat_data["Profit"] > max_profit:
+            max_profit = strat_data["Profit"]
+            best_stock = ticker
+            best_strategy = strat_name
+
+results["Best Performer"] = {
+    "Stock": best_stock,
+    "Strategy": best_strategy,
+    "Profit": max_profit
+}
+
+# Save results to JSON
+with open("results.json", "w") as f:
+    json.dump(results, f, indent=4)
+
+print("\n✅ All data updated and strategies completed.")
