@@ -3,7 +3,7 @@
 
 This project retrieves real-time cryptocurrency exchange rates from the CoinGecko API and constructs a **weighted directed graph** to analyze all possible trading paths between coins. By evaluating forward and reverse exchange paths, the system identifies potential **arbitrage opportunities** caused by exchange inefficiencies.
 
-This project demonstrates skills in **API integration**, **graph-based modeling**, **data transformation**, and **algorithmic analysis** — common components in data engineering and quantitative analytics workflows.
+This project demonstrates skills in **API integration**, **graph-based modeling**, **data transformation**, and **algorithmic analysis** common components in data engineering and quantitative analytics workflows.
 
 ---
 
