@@ -1,4 +1,4 @@
-# 🌍 Global Health & Urbanization Dashboard  
+# Global Health & Urbanization Dashboard  
 **Tableau · Data Analysis · Kaggle Dataset · Public Health Analytics**
 
 This project explores the relationship between **urbanization**, **health outcomes**, and **healthcare access** using a synthetic global health dataset sourced from Kaggle. The purpose of this dashboard is to visualize how disease burden, mortality, and access to care vary as countries urbanize across different income levels.
@@ -7,7 +7,7 @@ The data was cleaned, and exported into Tableau to create a multi-view analytica
 
 ---
 
-## 📦 Dataset
+## Dataset
 
 **Source:** Kaggle  
 **Type:** Synthetic global health dataset (no real patient data)  
@@ -36,7 +36,7 @@ The dataset includes:
 
 ---
 
-## 📊 Dashboard Features
+## Dashboard Features
 
 The dashboard includes several interactive views:
 
@@ -64,7 +64,7 @@ The dashboard includes several interactive views:
 
 ---
 
-## 🧠 Key Insights
+## Key Insights
 
 - Countries with **rapid urbanization but limited healthcare access** showed the **highest increases in disease burden**.  
 - **Low-income countries** experienced the strongest negative health impact from urban growth.  
@@ -73,7 +73,7 @@ The dashboard includes several interactive views:
 
 ---
 
-## 🛠️ Tools & Technologies
+## Tools & Technologies
 
 - **Tableau Desktop** – visualization & dashboards  
 - **Python / Pandas** (optional preprocessing)  
